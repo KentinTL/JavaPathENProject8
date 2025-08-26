@@ -16,6 +16,12 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+	<repositories>
+		<repository>
+			<id>local-libs</id>
+			<url>file://${project.basedir}/libs</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -48,21 +54,27 @@
 		</dependency>
 
 		<dependency>
-			<groupId>gpsUtil</groupId>
+			<groupId>com.local</groupId>
 			<artifactId>gpsUtil</artifactId>
 			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/gpsUtil.jar</systemPath>
 		</dependency>
 
 		<dependency>
-			<groupId>tripPricer</groupId>
-			<artifactId>tripPricer</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>rewardCentral</groupId>
+			<groupId>com.local</groupId>
 			<artifactId>rewardCentral</artifactId>
 			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/rewardCentral.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.local</groupId>
+			<artifactId>tripPricer</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/tripPricer.jar</systemPath>
 		</dependency>
 	</dependencies>
 
