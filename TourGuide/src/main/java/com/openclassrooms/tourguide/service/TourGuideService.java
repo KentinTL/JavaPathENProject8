@@ -1,5 +1,6 @@
 package com.openclassrooms.tourguide.service;
 
+import com.openclassrooms.tourguide.dto.NearByAttractionDto;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.tracker.Tracker;
 import com.openclassrooms.tourguide.user.User;
@@ -7,14 +8,7 @@ import com.openclassrooms.tourguide.user.UserReward;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -112,14 +106,33 @@ public class TourGuideService {
 	}
 
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
-		for (Attraction attraction : gpsUtil.getAttractions()) {
-			if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
-			}
-		}
+		Location userLocation = visitedLocation.location;
+		List<Attraction> allAttractions = gpsUtil.getAttractions();
+		return rewardsService.findClosestAttractions(userLocation, allAttractions, 5);
+	}
 
-		return nearbyAttractions;
+	public List<NearByAttractionDto> getNearByAttractionDtos(User user) {
+		VisitedLocation visitedLocation = getUserLocation(user);
+		Location userLocation = visitedLocation.location;
+		List<Attraction> attractions = gpsUtil.getAttractions();
+
+		List<Attraction> closestAttractions = rewardsService.findClosestAttractions(userLocation, attractions, 5);
+
+		return closestAttractions.stream()
+				.map(attraction -> {
+					Location attractionLocation = new Location(attraction.latitude, attraction.longitude);
+					double distance = rewardsService.getDistance(userLocation, attractionLocation);
+					int rewardPoints = rewardsService.getRewardPoints(attraction, user);
+
+					return new NearByAttractionDto(
+							attraction.attractionName,
+							attractionLocation,
+							userLocation,
+							distance,
+							rewardPoints
+					);
+				})
+				.collect(Collectors.toList());
 	}
 
 	private void addShutDownHook() {

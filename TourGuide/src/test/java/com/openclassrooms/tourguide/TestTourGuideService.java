@@ -2,16 +2,25 @@ package com.openclassrooms.tourguide;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Disabled;
+import com.openclassrooms.tourguide.dto.NearByAttractionDto;
+import gpsUtil.location.Location;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import rewardCentral.RewardCentral;
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
 import com.openclassrooms.tourguide.service.RewardsService;
@@ -19,7 +28,22 @@ import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
 import tripPricer.Provider;
 
+@ExtendWith(MockitoExtension.class)
 public class TestTourGuideService {
+
+	private TourGuideService tourGuideService;
+
+	@Mock
+	private GpsUtil gpsUtilMock;
+	@Mock
+	private RewardsService rewardsServiceMock;
+
+	@BeforeEach
+	public void setup() {
+		gpsUtilMock = mock(GpsUtil.class);
+		rewardsServiceMock = mock(RewardsService.class);
+		tourGuideService = Mockito.spy(new TourGuideService(gpsUtilMock, rewardsServiceMock));
+	}
 
 	@Test
 	public void getUserLocation() {
@@ -92,7 +116,6 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 
-	@Disabled // Not yet implemented
 	@Test
 	public void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -108,6 +131,38 @@ public class TestTourGuideService {
 		tourGuideService.tracker.stopTracking();
 
 		assertEquals(5, attractions.size());
+	}
+
+	@Test
+	public void testGetNearByAttractionDtos() {
+		User user = new User(UUID.randomUUID(), "testUser", "000", "test@test.com");
+		Location userLoc = new Location(40.0, -75.0);
+		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), userLoc, user.getLatestLocationTimestamp());
+
+		when(gpsUtilMock.getAttractions()).thenReturn(Arrays.asList(
+				new Attraction("Attraction1", "City1", "State1", 40.0, -75.0),
+				new Attraction("Attraction2", "City2", "State2", 41.0, -75.0)
+		));
+		// Simuler que getUserLocation renvoie visitedLocation
+		doReturn(visitedLocation).when(tourGuideService).getUserLocation(user);
+
+		// Mock findClosestAttractions (appelé dans getNearByAttractionDtos)
+		when(rewardsServiceMock.findClosestAttractions(any(Location.class), anyList(), eq(5)))
+				.thenReturn(Arrays.asList(
+						new Attraction("Attraction1", "City1", "State1", 40.0, -75.0),
+						new Attraction("Attraction2", "City2", "State2", 41.0, -75.0)
+				));
+
+		// Mock getDistance et getRewardPoints
+		when(rewardsServiceMock.getDistance(any(Location.class), any(Location.class))).thenReturn(10.0);
+		when(rewardsServiceMock.getRewardPoints(any(Attraction.class), eq(user))).thenReturn(100);
+
+		List<NearByAttractionDto> dtos = tourGuideService.getNearByAttractionDtos(user);
+
+		assertEquals(2, dtos.size());
+		assertEquals("Attraction1", dtos.get(0).attractionName);
+		assertEquals(10.0, dtos.get(0).distance);
+		assertEquals(100, dtos.get(0).rewardPoints);
 	}
 
 	@Test
