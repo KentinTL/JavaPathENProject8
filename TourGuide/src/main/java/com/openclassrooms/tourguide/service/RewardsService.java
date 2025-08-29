@@ -1,7 +1,9 @@
 package com.openclassrooms.tourguide.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -67,7 +69,7 @@ public class RewardsService {
 		return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
 	}
 
-	private int getRewardPoints(Attraction attraction, User user) {
+	public int getRewardPoints(Attraction attraction, User user) {
 		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 	}
 
@@ -83,6 +85,14 @@ public class RewardsService {
         double nauticalMiles = 60 * Math.toDegrees(angle);
         double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
         return statuteMiles;
+	}
+
+	public List<Attraction> findClosestAttractions(Location userLocation, List<Attraction> attractions, int limit) {
+		return attractions.stream()
+				.sorted(Comparator.comparingDouble(a ->
+						getDistance(userLocation, new Location(a.latitude, a.longitude))))
+				.limit(limit)
+				.collect(Collectors.toList());
 	}
 
 }
