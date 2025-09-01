@@ -63,18 +63,18 @@
 
 		<dependency>
 			<groupId>com.local</groupId>
-			<artifactId>rewardCentral</artifactId>
+			<artifactId>RewardCentral</artifactId>
 			<version>1.0.0</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/rewardCentral.jar</systemPath>
+			<systemPath>${project.basedir}/libs/RewardCentral.jar</systemPath>
 		</dependency>
 
 		<dependency>
 			<groupId>com.local</groupId>
-			<artifactId>tripPricer</artifactId>
+			<artifactId>TripPricer</artifactId>
 			<version>1.0.0</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/libs/tripPricer.jar</systemPath>
+			<systemPath>${project.basedir}/libs/TripPricer.jar</systemPath>
 		</dependency>
 	</dependencies>
 

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 import gpsUtil.location.Location;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -23,13 +22,6 @@ import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
 public class TestRewardsService {
-	private RewardsService rewardsService;
-
-	@BeforeEach
-	public void setup() {
-		rewardsService = new RewardsService(null, null); // on passe null pour gpsUtil et RewardCentral ici si inutilisés
-	}
-
 	@Test
 	public void userGetRewards() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -74,6 +66,9 @@ public class TestRewardsService {
 
 	@Test
 	public void testFindClosestAttractions() {
+		GpsUtil gpsUtil = new GpsUtil();
+		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+
 		Location userLocation = new Location(40.0, -75.0);
 
 		Attraction a1 = new Attraction("Attraction1", "City1", "State1", 40.0, -75.0); // distance 0
